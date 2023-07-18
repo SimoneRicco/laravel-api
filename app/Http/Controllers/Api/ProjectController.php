@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Project;
-// use Illuminate\Http\Request;
+use Illuminate\Http\Request;
 
 class ProjectController extends Controller
 {
@@ -13,10 +13,13 @@ class ProjectController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        $project = Project::with('type', 'technologies')->paginate(5);
-        return response()->json($project);
+        $searchString = $request->query('q', '');
+        $project = Project::with('type', 'technologies')->where('title', 'LIKE', "%${searchString}%")->paginate(5);
+        return response()->json([
+            'results'   => $project,
+        ]);
     }
 
     /**
@@ -34,6 +37,16 @@ class ProjectController extends Controller
     public function show($slug)
     {
         $project = Project::where('slug', $slug)->firstOrFail();
-        return response()->json($project);
+        return response()->json([
+            'results'   => $project,
+        ]);
+    }
+    public function random()
+    {
+        $project = Project::inRandomOrder()->limit(9)->get();
+
+        return response()->json([
+            'results'   => $project,
+        ]);
     }
 }
